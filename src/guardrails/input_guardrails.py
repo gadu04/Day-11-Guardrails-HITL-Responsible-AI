@@ -38,9 +38,20 @@ def detect_injection(user_input: str) -> bool:
         True if injection detected, False otherwise
     """
     INJECTION_PATTERNS = [
-        # TODO: Add at least 5 regex patterns
-        # Example:
-        # r"ignore (all )?(previous|above) instructions",
+        r"ignore\s+(all\s+)?(previous|above|prior)\s+instructions?",
+        r"forget\s+(all\s+)?(previous|prior)\s+instructions?",
+        r"\byou\s+are\s+now\b",
+        r"\b(system|hidden)\s+prompt\b",
+        r"\breveal\s+(your\s+)?(instructions?|prompt|secrets?|password|api\s*key)\b",
+        r"\bpretend\s+you\s+are\b",
+        r"\bact\s+as\s+(an?\s+)?unrestricted\b",
+        r"\b(i\s*am|i'?m)\s+the\s+(ciso|admin|auditor|developer)\b",
+        r"\btranslate\s+(your\s+)?(system\s+prompt|instructions?)\b",
+        r"\b(output|format)\b.*\b(system\s+prompt|config)\b.*\b(json|xml|yaml|markdown)\b",
+        r"\bfill\s+in\b.*\b(password|api\s*key|connection\s*string)\b",
+        r"\b(database|db)\s+connection\s+string\b",
+        r"\bb[oỏ]\s*qua\b.*\bh[uư][ơoớ]\s*d[ẫaă]n\b",
+        r"\bm[âậaă]t\s*kh[âẩaă]u\b.*\badmin\b",
     ]
 
     for pattern in INJECTION_PATTERNS:
@@ -68,14 +79,19 @@ def topic_filter(user_input: str) -> bool:
     Returns:
         True if input should be BLOCKED (off-topic or blocked topic)
     """
-    input_lower = user_input.lower()
+    input_lower = user_input.lower().strip()
+    if not input_lower:
+        return True
 
-    # TODO: Implement logic:
-    # 1. If input contains any blocked topic -> return True
-    # 2. If input doesn't contain any allowed topic -> return True
-    # 3. Otherwise -> return False (allow)
+    for blocked in BLOCKED_TOPICS:
+        if re.search(rf"\b{re.escape(blocked.lower())}\b", input_lower):
+            return True
 
-    pass  # Replace with your implementation
+    for allowed in ALLOWED_TOPICS:
+        if re.search(rf"\b{re.escape(allowed.lower())}\b", input_lower):
+            return False
+
+    return True
 
 
 # ============================================================
@@ -126,16 +142,33 @@ class InputGuardrailPlugin(base_plugin.BasePlugin):
             types.Content if message is blocked (return replacement)
         """
         self.total_count += 1
-        text = self._extract_text(user_message)
+        text = self._extract_text(user_message).strip()
 
-        # TODO: Implement logic:
-        # 1. Call detect_injection(text)
-        #    - If True: increment blocked_count, return self._block_response("...")
-        # 2. Call topic_filter(text)
-        #    - If True: increment blocked_count, return self._block_response("...")
-        # 3. If both are False: return None (let message through)
+        if not text:
+            self.blocked_count += 1
+            return self._block_response(
+                "Your message is empty. Please ask a banking-related question."
+            )
 
-        pass  # Replace with your implementation
+        if len(text) > 4000:
+            self.blocked_count += 1
+            return self._block_response(
+                "Your message is too long. Please shorten it and try again."
+            )
+
+        if detect_injection(text):
+            self.blocked_count += 1
+            return self._block_response(
+                "I cannot process requests that attempt to override instructions or extract sensitive system details."
+            )
+
+        if topic_filter(text):
+            self.blocked_count += 1
+            return self._block_response(
+                "I can only help with banking topics such as accounts, transfers, loans, savings, and credit cards."
+            )
+
+        return None
 
 
 # ============================================================

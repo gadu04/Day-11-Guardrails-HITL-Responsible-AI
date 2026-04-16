@@ -8,6 +8,7 @@ Usage:
     python main.py --part 2     # Run only Part 2 (guardrails)
     python main.py --part 3     # Run only Part 3 (testing pipeline)
     python main.py --part 4     # Run only Part 4 (HITL design)
+    python main.py --part 5     # Run only Part 5 (assignment defense pipeline)
 """
 import sys
 import asyncio
@@ -122,6 +123,17 @@ def part4_hitl():
     test_hitl_points()
 
 
+async def part5_assignment_pipeline():
+    """Part 5: Run full defense-in-depth assignment pipeline."""
+    print("\n" + "=" * 60)
+    print("PART 5: Assignment Defense Pipeline")
+    print("=" * 60)
+
+    from testing.defense_pipeline import run_assignment_pipeline
+
+    await run_assignment_pipeline()
+
+
 async def main(parts=None):
     """Run the full lab or specific parts.
 
@@ -142,6 +154,8 @@ async def main(parts=None):
             await part3_testing()
         elif part == 4:
             part4_hitl()
+        elif part == 5:
+            await part5_assignment_pipeline()
         else:
             print(f"Unknown part: {part}")
 
@@ -155,8 +169,8 @@ if __name__ == "__main__":
         description="Lab 11: Guardrails, HITL & Responsible AI"
     )
     parser.add_argument(
-        "--part", type=int, choices=[1, 2, 3, 4],
-        help="Run only a specific part (1-4). Default: run all.",
+        "--part", type=int, choices=[1, 2, 3, 4, 5],
+        help="Run only a specific part (1-5). Default: run 1-4.",
     )
     args = parser.parse_args()
 

@@ -30,9 +30,12 @@ Day-11-Guardrails-HITL-Responsible-AI/
 │   ├── guardrails/
 │   │   ├── input_guardrails.py    # TODO 3-5: Injection detection, topic filter, plugin
 │   │   ├── output_guardrails.py   # TODO 6-8: Content filter, LLM-as-Judge, plugin
+│   │   ├── rate_limiter.py        # Assignment: Sliding-window rate limiter plugin
+│   │   ├── audit_monitoring.py    # Assignment: Audit log + monitoring alerts
 │   │   └── nemo_guardrails.py     # TODO 9: NeMo Guardrails with Colang
 │   ├── testing/
-│   │   └── testing.py             # TODO 10-11: Before/after comparison, pipeline
+│   │   ├── testing.py             # TODO 10-11: Before/after comparison, pipeline
+│   │   └── defense_pipeline.py    # Assignment: Full defense-in-depth test runner
 │   └── hitl/
 │       └── hitl.py                # TODO 12-13: Confidence router, HITL design
 ├── requirements.txt
@@ -71,13 +74,21 @@ python main.py --part 1    # Part 1: Attacks
 python main.py --part 2    # Part 2: Guardrails
 python main.py --part 3    # Part 3: Testing pipeline
 python main.py --part 4    # Part 4: HITL design
+python main.py --part 5    # Part 5: Assignment defense-in-depth pipeline
 
 # Or test individual modules
-python guardrails/input_guardrails.py
-python guardrails/output_guardrails.py
-python testing/testing.py
-python hitl/hitl.py
+python -m guardrails.input_guardrails
+python -m guardrails.output_guardrails
+python -m testing.testing
+python -m testing.defense_pipeline
+python -m hitl.hitl
 ```
+
+### Assignment 11 Pipeline Output
+
+- The full assignment runner executes all required suites: safe queries, attack queries, rate limiting, and edge cases.
+- Audit logs are exported to `security_audit.json` for submission evidence.
+- Monitoring metrics and alerts are printed at the end of the run.
 
 ### Tools Used
 
